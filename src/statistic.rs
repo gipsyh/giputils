@@ -92,13 +92,19 @@ impl Debug for SuccessRate {
 #[derive(Default)]
 pub struct Case(String);
 
+impl Case {
+    pub fn new<S: ToString>(s: S) -> Self {
+        Self(s.to_string())
+    }
+}
+
 impl Debug for Case {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-struct RunningTime {
+pub struct RunningTime {
     start: Instant,
 }
 
