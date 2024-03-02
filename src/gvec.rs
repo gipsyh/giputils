@@ -55,13 +55,25 @@ impl<T: Default> Gvec<T> {
 impl<T> Index<u32> for Gvec<T> {
     type Output = T;
 
+    #[inline]
     fn index(&self, index: u32) -> &Self::Output {
-        unsafe { self.data.get_unchecked(index as usize) }
+        #[cfg(feature = "no_bound_check")]
+        unsafe {
+            self.data.get_unchecked(index as usize)
+        }
+        #[cfg(not(feature = "no_bound_check"))]
+        &self.data[index as usize]
     }
 }
 
 impl<T> IndexMut<u32> for Gvec<T> {
+    #[inline]
     fn index_mut(&mut self, index: u32) -> &mut Self::Output {
-        unsafe { self.data.get_unchecked_mut(index as usize) }
+        #[cfg(feature = "no_bound_check")]
+        unsafe {
+            self.data.get_unchecked_mut(index as usize)
+        }
+        #[cfg(not(feature = "no_bound_check"))]
+        &mut self.data[index as usize]
     }
 }
