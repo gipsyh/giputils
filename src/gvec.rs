@@ -35,6 +35,11 @@ impl<T> Gvec<T> {
     }
 
     #[inline]
+    pub fn clear(&mut self) {
+        self.data.clear()
+    }
+
+    #[inline]
     pub fn iter(&self) -> slice::Iter<T> {
         self.data.iter()
     }
