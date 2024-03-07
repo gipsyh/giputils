@@ -1,6 +1,6 @@
 use std::{
     ops::{Index, IndexMut},
-    slice,
+    slice, vec,
 };
 
 #[derive(Default, Debug)]
@@ -82,5 +82,16 @@ impl<T> IndexMut<u32> for Gvec<T> {
         }
         #[cfg(not(feature = "no_bound_check"))]
         &mut self.data[index as usize]
+    }
+}
+
+impl<T> IntoIterator for Gvec<T> {
+    type Item = T;
+
+    type IntoIter = vec::IntoIter<T>;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.into_iter()
     }
 }
