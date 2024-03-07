@@ -1,6 +1,6 @@
 use std::{
-    ops::{Index, IndexMut},
-    slice, vec,
+    ops::{Deref, DerefMut, Index, IndexMut},
+    vec,
 };
 
 #[derive(Default, Debug)]
@@ -15,38 +15,8 @@ impl<T> Gvec<T> {
     }
 
     #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.data.is_empty()
-    }
-
-    #[inline]
-    pub fn push(&mut self, x: T) {
-        self.data.push(x)
-    }
-
-    #[inline]
-    pub fn pop(&mut self) -> Option<T> {
-        self.data.pop()
-    }
-
-    #[inline]
     pub fn swap_remove(&mut self, index: u32) {
         self.data.swap_remove(index as usize);
-    }
-
-    #[inline]
-    pub fn clear(&mut self) {
-        self.data.clear()
-    }
-
-    #[inline]
-    pub fn iter(&self) -> slice::Iter<T> {
-        self.data.iter()
-    }
-
-    #[inline]
-    pub fn iter_mut(&mut self) -> slice::IterMut<T> {
-        self.data.iter_mut()
     }
 }
 
@@ -93,5 +63,21 @@ impl<T> IntoIterator for Gvec<T> {
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.data.into_iter()
+    }
+}
+
+impl<T> Deref for Gvec<T> {
+    type Target = Vec<T>;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+
+impl<T> DerefMut for Gvec<T> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.data
     }
 }
