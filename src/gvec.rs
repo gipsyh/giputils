@@ -23,7 +23,7 @@ impl<T> Gvec<T> {
 impl<T: Default> Gvec<T> {
     #[inline]
     pub fn reserve(&mut self, size: u32) {
-        if self.len() < size {
+        if self.len() <= size {
             self.data.resize_with(size as usize, Default::default);
         }
     }
