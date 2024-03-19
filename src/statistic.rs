@@ -108,6 +108,18 @@ pub struct RunningTime {
     start: Instant,
 }
 
+impl RunningTime {
+    #[inline]
+    pub fn start(&self) -> Duration {
+        self.start.elapsed()
+    }
+
+    #[inline]
+    pub fn stop(&self, start: Duration) -> Duration {
+        self.start.elapsed() - start
+    }
+}
+
 impl Default for RunningTime {
     fn default() -> Self {
         Self {

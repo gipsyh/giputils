@@ -1,6 +1,6 @@
 use std::{
     ops::{Deref, DerefMut, Index, IndexMut},
-    vec,
+    ptr, vec,
 };
 
 #[derive(Default, Debug)]
@@ -12,6 +12,15 @@ impl<T> Gvec<T> {
     #[inline]
     pub fn len(&self) -> u32 {
         self.data.len() as u32
+    }
+
+    #[inline]
+    pub fn swap(&mut self, x: u32, y: u32) {
+        let pa = ptr::addr_of_mut!(self[x]);
+        let pb = ptr::addr_of_mut!(self[y]);
+        unsafe {
+            ptr::swap(pa, pb);
+        }
     }
 
     #[inline]
