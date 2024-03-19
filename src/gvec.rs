@@ -24,8 +24,8 @@ impl<T> Gvec<T> {
     }
 
     #[inline]
-    pub fn swap_remove(&mut self, index: u32) {
-        self.data.swap_remove(index as usize);
+    pub fn swap_remove(&mut self, index: u32) -> T {
+        self.data.swap_remove(index as usize)
     }
 }
 
