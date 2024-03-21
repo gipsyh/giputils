@@ -10,6 +10,13 @@ pub struct Gvec<T> {
 
 impl<T> Gvec<T> {
     #[inline]
+    pub fn new() -> Self {
+        Self {
+            data: Default::default(),
+        }
+    }
+
+    #[inline]
     pub fn len(&self) -> u32 {
         self.data.len() as u32
     }
