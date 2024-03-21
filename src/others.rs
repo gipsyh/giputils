@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct OptionU32(u32);
 
@@ -24,5 +26,21 @@ impl Default for OptionU32 {
     #[inline]
     fn default() -> Self {
         Self::NONE
+    }
+}
+
+impl Deref for OptionU32 {
+    type Target = u32;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for OptionU32 {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
