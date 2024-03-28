@@ -7,7 +7,7 @@ add_library(giputils STATIC giputils.c)
 
 add_custom_target(
     libgiputils
-    COMMAND cargo build --release
+    COMMAND cargo build --release --features no_bound_check
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../src/*.rs
 )
