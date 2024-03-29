@@ -30,6 +30,13 @@ impl AddAssign<f64> for Average {
     }
 }
 
+impl AddAssign<Average> for Average {
+    fn add_assign(&mut self, rhs: Average) {
+        self.sum += rhs.sum;
+        self.num += rhs.num;
+    }
+}
+
 #[derive(Default)]
 pub struct AverageDuration {
     sum: Duration,
