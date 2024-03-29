@@ -1,6 +1,6 @@
 use std::{
     fmt::{self, Debug},
-    ops::AddAssign,
+    ops::{Add, AddAssign},
     time::{Duration, Instant},
 };
 
@@ -30,10 +30,14 @@ impl AddAssign<f64> for Average {
     }
 }
 
-impl AddAssign<Average> for Average {
-    fn add_assign(&mut self, rhs: Average) {
-        self.sum += rhs.sum;
-        self.num += rhs.num;
+impl Add<Average> for Average {
+    type Output = Self;
+
+    fn add(self, rhs: Average) -> Self::Output {
+        Self {
+            sum: self.sum + rhs.sum,
+            num: self.num + rhs.num,
+        }
     }
 }
 
