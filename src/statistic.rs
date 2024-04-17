@@ -4,7 +4,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct Average {
     sum: f64,
     num: usize,
@@ -12,7 +12,7 @@ pub struct Average {
 
 impl Debug for Average {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:.2}", self.sum / self.num as f64)
+        write!(f, "{:.6}", self.sum / self.num as f64)
     }
 }
 
@@ -41,7 +41,7 @@ impl Add<Average> for Average {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct AverageDuration {
     sum: Duration,
     num: usize,
