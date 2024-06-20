@@ -64,7 +64,7 @@ impl AddAssign<Duration> for AverageDuration {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct SuccessRate {
     succ: usize,
     fail: usize,
@@ -85,6 +85,26 @@ impl SuccessRate {
         } else {
             self.fail()
         }
+    }
+}
+
+impl Add for SuccessRate {
+    type Output = Self;
+
+    #[inline]
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            succ: self.succ + rhs.succ,
+            fail: self.fail + rhs.fail,
+        }
+    }
+}
+
+impl AddAssign for SuccessRate {
+    #[inline]
+    fn add_assign(&mut self, rhs: Self) {
+        self.succ += rhs.succ;
+        self.fail += rhs.fail;
     }
 }
 
