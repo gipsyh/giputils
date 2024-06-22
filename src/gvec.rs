@@ -29,10 +29,14 @@ impl<T> Gvec<T> {
             ptr::swap(pa, pb);
         }
     }
+}
 
+impl<T: Copy + Clone> Gvec<T> {
     #[inline]
-    pub fn swap_remove(&mut self, index: u32) -> T {
-        self.data.swap_remove(index as usize)
+    pub fn swap_remove(&mut self, index: u32) {
+        let len = self.len() - 1;
+        self[index] = self[len];
+        unsafe { self.set_len(len as usize) }
     }
 }
 
