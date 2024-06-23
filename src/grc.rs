@@ -1,6 +1,6 @@
 use std::{
     hash::{Hash, Hasher},
-    ops::Deref,
+    ops::{Deref, DerefMut},
     rc::Rc,
 };
 
@@ -43,6 +43,13 @@ impl<T> Deref for Grc<T> {
     #[inline]
     fn deref(&self) -> &Self::Target {
         self.rc.deref()
+    }
+}
+
+impl<T> DerefMut for Grc<T> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { Rc::get_mut_unchecked(&mut self.rc) }
     }
 }
 
