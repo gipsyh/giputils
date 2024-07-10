@@ -3,7 +3,7 @@ use std::{
     ptr, vec,
 };
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Gvec<T> {
     data: Vec<T>,
 }
@@ -83,6 +83,15 @@ impl<T> IntoIterator for Gvec<T> {
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.data.into_iter()
+    }
+}
+
+impl<A> FromIterator<A> for Gvec<A> {
+    #[inline]
+    fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
+        Self {
+            data: Vec::from_iter(iter),
+        }
     }
 }
 

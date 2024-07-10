@@ -4,7 +4,7 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Grc<T> {
     rc: Rc<T>,
 }
