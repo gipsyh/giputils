@@ -72,7 +72,7 @@ impl<T> Hash for Grc<T> {
 
 unsafe impl<T> Sync for Grc<T> {}
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct Garc<T> {
     arc: Arc<T>,
 }
@@ -138,3 +138,11 @@ impl<T> Hash for Garc<T> {
 }
 
 unsafe impl<T> Sync for Garc<T> {}
+
+impl<T> Clone for Garc<T> {
+    fn clone(&self) -> Self {
+        Self {
+            arc: self.arc.clone(),
+        }
+    }
+}
