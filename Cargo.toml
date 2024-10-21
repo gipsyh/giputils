@@ -2,6 +2,7 @@
 name = "giputils"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 authors = ["Yuheng Su <gipsyh.icu@gmail.com>"]
 repository = "https://github.com/gipsyh/giputils"
 description = "Some useful utilities for rust programming"
