@@ -1,6 +1,6 @@
 [package]
 name = "giputils"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 authors = ["Yuheng Su <gipsyh.icu@gmail.com>"]
@@ -14,6 +14,7 @@ name = "giputils"
 crate-type = ["staticlib", "rlib"]
 
 [dependencies]
+tempfile = "3.14.0"
 
 [features]
 no_bound_check = []
