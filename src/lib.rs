@@ -6,5 +6,6 @@ pub mod gvec;
 pub mod mount;
 mod others;
 pub mod statistic;
+pub mod build;
 
 pub use others::*;
