@@ -23,8 +23,9 @@ impl<T> Grc<T> {
 
     #[inline]
     pub fn from_ptr(p: *const T) -> Self {
-        let rc = unsafe { Rc::from_raw(p) };
-        Self { rc }
+        Self {
+            rc: unsafe { Rc::from_raw(p) },
+        }
     }
 
     #[inline]
@@ -90,8 +91,9 @@ impl<T> Garc<T> {
 
     #[inline]
     pub fn from_ptr(p: *const T) -> Self {
-        let rc = unsafe { Arc::from_raw(p) };
-        Self { arc: rc }
+        Self {
+            arc: unsafe { Arc::from_raw(p) },
+        }
     }
 
     #[inline]

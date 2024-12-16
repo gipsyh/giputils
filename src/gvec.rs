@@ -17,6 +17,7 @@ impl<T> Gvec<T> {
     }
 
     #[inline]
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> u32 {
         self.data.len() as u32
     }
