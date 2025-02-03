@@ -25,8 +25,9 @@ macro_rules! define_rc_wrapper {
                 $inner::as_ptr(&self.inner)
             }
 
+            /// # Safety
             #[inline]
-            pub fn from_ptr(p: *const T) -> Self {
+            pub unsafe fn from_ptr(p: *const T) -> Self {
                 Self {
                     inner: unsafe { $inner::from_raw(p) },
                 }
@@ -42,7 +43,9 @@ macro_rules! define_rc_wrapper {
                 unsafe { $inner::increment_strong_count(self.as_ptr()) }
             }
 
+            /// # Safety
             #[inline]
+            #[allow(clippy::mut_from_ref)]
             pub unsafe fn get_mut_from_unmut(&self) -> &mut T {
                 unsafe { &mut *(self.as_ptr() as *mut T) }
             }
