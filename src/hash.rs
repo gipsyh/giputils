@@ -1,6 +1,10 @@
 use ahash::{HashMap, HashSet, RandomState};
-use std::ops::{Deref, DerefMut};
+use std::{
+    collections::{hash_map, hash_set},
+    ops::{Deref, DerefMut},
+};
 
+#[derive(Debug, Clone)]
 pub struct GHashSet<T> {
     h: HashSet<T>,
 }
@@ -36,6 +40,18 @@ impl<T> Default for GHashSet<T> {
     }
 }
 
+impl<T> IntoIterator for GHashSet<T> {
+    type Item = T;
+
+    type IntoIter = hash_set::IntoIter<T>;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.h.into_iter()
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct GHashMap<K, V> {
     h: HashMap<K, V>,
 }
@@ -68,5 +84,16 @@ impl<K, V> DerefMut for GHashMap<K, V> {
 impl<K, V> Default for GHashMap<K, V> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<K, V> IntoIterator for GHashMap<K, V> {
+    type Item = (K, V);
+
+    type IntoIter = hash_map::IntoIter<K, V>;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.h.into_iter()
     }
 }
