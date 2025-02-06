@@ -1,6 +1,7 @@
 use ahash::{HashMap, HashSet, RandomState};
 use std::{
     collections::{hash_map, hash_set},
+    hash::Hash,
     ops::{Deref, DerefMut},
 };
 
@@ -51,6 +52,16 @@ impl<T> IntoIterator for GHashSet<T> {
     }
 }
 
+impl<T: Eq + Hash> FromIterator<T> for GHashSet<T> {
+    #[inline]
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let hb = RandomState::with_seeds(0, 0, 0, 0);
+        let mut h = HashSet::with_hasher(hb);
+        h.extend(iter);
+        Self { h }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct GHashMap<K, V> {
     h: HashMap<K, V>,
@@ -95,5 +106,15 @@ impl<K, V> IntoIterator for GHashMap<K, V> {
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.h.into_iter()
+    }
+}
+
+impl<K: Eq + Hash, V> FromIterator<(K, V)> for GHashMap<K, V> {
+    #[inline]
+    fn from_iter<I: IntoIterator<Item = (K, V)>>(iter: I) -> Self {
+        let hb = RandomState::with_seeds(0, 0, 0, 0);
+        let mut h = HashMap::with_hasher(hb);
+        h.extend(iter);
+        Self { h }
     }
 }
