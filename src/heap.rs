@@ -15,6 +15,16 @@ impl<T: Into<u32> + Copy> BinaryHeap<T> {
     }
 
     #[inline]
+    pub fn len(&self) -> usize {
+        self.heap.len() as usize
+    }
+
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.heap.is_empty()
+    }
+
+    #[inline]
     pub fn clear(&mut self) {
         for v in self.heap.iter().copied() {
             self.pos[v.into()] = OptionU32::NONE;
@@ -23,7 +33,8 @@ impl<T: Into<u32> + Copy> BinaryHeap<T> {
     }
 
     #[inline]
-    fn up<LGE: Fn(T, T) -> bool>(&mut self, v: T, lge: LGE) {
+    pub fn up<LGE: Fn(T, T) -> bool>(&mut self, v: T, lge: LGE) {
+        self.pos.reserve(v.into() + 1);
         let mut idx = match self.pos[v.into()] {
             OptionU32::NONE => return,
             idx => *idx,
@@ -42,8 +53,12 @@ impl<T: Into<u32> + Copy> BinaryHeap<T> {
     }
 
     #[inline]
-    fn down<LGE: Fn(T, T) -> bool>(&mut self, mut idx: u32, lge: LGE) {
-        let v = self.heap[idx];
+    pub fn down<LGE: Fn(T, T) -> bool>(&mut self, v: T, lge: LGE) {
+        self.pos.reserve(v.into() + 1);
+        let mut idx = match self.pos[v.into()] {
+            OptionU32::NONE => return,
+            idx => *idx,
+        };
         loop {
             let left = (idx << 1) + 1;
             if left >= self.heap.len() {
@@ -89,7 +104,7 @@ impl<T: Into<u32> + Copy> BinaryHeap<T> {
         self.pos[value.into()] = OptionU32::NONE;
         self.heap.pop();
         if self.heap.len() > 1 {
-            self.down(0, lge);
+            self.down(self.heap[0], lge);
         }
         Some(value)
     }
