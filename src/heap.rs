@@ -7,6 +7,13 @@ pub struct BinaryHeap<T: Into<u32> + Copy> {
 }
 
 impl<T: Into<u32> + Copy> BinaryHeap<T> {
+    pub fn new() -> Self {
+        Self {
+            heap: Gvec::new(),
+            pos: Gvec::new(),
+        }
+    }
+
     #[inline]
     pub fn clear(&mut self) {
         for v in self.heap.iter().copied() {
