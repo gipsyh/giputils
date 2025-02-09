@@ -116,8 +116,14 @@ impl<T: Into<u32> + Copy, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> {
         Some(value)
     }
 
+    #[inline]
     pub fn update(&mut self, v: T) {
         self.up(v);
         self.down(v);
+    }
+
+    #[inline]
+    pub fn elements(&self) -> &[T] {
+        &self.heap
     }
 }
