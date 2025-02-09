@@ -39,7 +39,7 @@ impl<T: Into<u32> + Copy, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> {
     }
 
     #[inline]
-    pub fn up(&mut self, v: T) {
+    fn up(&mut self, v: T) {
         self.pos.reserve(v.into() + 1);
         let mut idx = match self.pos[v.into()] {
             OptionU32::NONE => return,
@@ -59,7 +59,7 @@ impl<T: Into<u32> + Copy, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> {
     }
 
     #[inline]
-    pub fn down(&mut self, v: T) {
+    fn down(&mut self, v: T) {
         self.pos.reserve(v.into() + 1);
         let mut idx = match self.pos[v.into()] {
             OptionU32::NONE => return,
@@ -114,5 +114,10 @@ impl<T: Into<u32> + Copy, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> {
             self.down(self.heap[0]);
         }
         Some(value)
+    }
+
+    pub fn update(&mut self, v: T) {
+        self.up(v);
+        self.down(v);
     }
 }
