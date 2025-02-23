@@ -5,13 +5,13 @@ pub trait BinaryHeapCmp<T> {
 }
 
 #[derive(Default)]
-pub struct BinaryHeap<T: Into<u32> + Copy, CMP: BinaryHeapCmp<T>> {
+pub struct BinaryHeap<T: Into<u32> + Copy + PartialEq, CMP: BinaryHeapCmp<T>> {
     heap: Gvec<T>,
     pos: Gvec<OptionU32>,
     cmp: Grc<CMP>,
 }
 
-impl<T: Into<u32> + Copy, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> {
+impl<T: Into<u32> + Copy + PartialEq, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> {
     pub fn new(cmp: Grc<CMP>) -> Self {
         Self {
             heap: Gvec::new(),
@@ -39,7 +39,7 @@ impl<T: Into<u32> + Copy, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> {
     }
 
     #[inline]
-    fn up(&mut self, v: T) {
+    pub fn up(&mut self, v: T) {
         self.pos.reserve(v.into() + 1);
         let mut idx = match self.pos[v.into()] {
             OptionU32::NONE => return,
@@ -54,12 +54,14 @@ impl<T: Into<u32> + Copy, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> {
             *self.pos[self.heap[idx].into()] = idx;
             idx = pidx;
         }
-        self.heap[idx] = v;
-        *self.pos[v.into()] = idx;
+        if self.heap[idx] != v {
+            self.heap[idx] = v;
+            *self.pos[v.into()] = idx;
+        }
     }
 
     #[inline]
-    fn down(&mut self, v: T) {
+    pub fn down(&mut self, v: T) {
         self.pos.reserve(v.into() + 1);
         let mut idx = match self.pos[v.into()] {
             OptionU32::NONE => return,
@@ -84,8 +86,10 @@ impl<T: Into<u32> + Copy, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> {
             *self.pos[self.heap[idx].into()] = idx;
             idx = child;
         }
-        self.heap[idx] = v;
-        *self.pos[v.into()] = idx;
+        if self.heap[idx] != v {
+            self.heap[idx] = v;
+            *self.pos[v.into()] = idx;
+        }
     }
 
     #[inline]
