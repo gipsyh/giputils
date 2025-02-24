@@ -1,4 +1,5 @@
 use crate::{
+    grc::Grc,
     gvec::Gvec,
     hash::{GHashMap, GHashSet},
 };
@@ -9,7 +10,7 @@ use std::{
 
 pub struct Gallocator<T> {
     data: Gvec<T>,
-    removed: GHashSet<u32>,
+    removed: Grc<GHashSet<u32>>,
 }
 
 impl<T> Gallocator<T> {
@@ -43,6 +44,10 @@ impl<T> Gallocator<T> {
         self.removed.clear();
         map
     }
+
+    pub fn get_removed(&self) -> Grc<GHashSet<u32>> {
+        self.removed.clone()
+    }
 }
 
 impl<T> Index<u32> for Gallocator<T> {
@@ -66,7 +71,7 @@ impl<T> Default for Gallocator<T> {
     fn default() -> Self {
         Self {
             data: Gvec::new(),
-            removed: GHashSet::new(),
+            removed: Grc::new(GHashSet::new()),
         }
     }
 }
