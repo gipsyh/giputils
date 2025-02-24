@@ -1,4 +1,4 @@
-use crate::{grc::Grc, gvec::Gvec, OptionU32};
+use crate::{OptionU32, grc::Grc, gvec::Gvec};
 
 pub trait BinaryHeapCmp<T> {
     fn lge(&self, s: T, o: T) -> bool;

@@ -35,7 +35,7 @@ impl Drop for RustVec {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn rust_vec_drop(vec: RustVec) {
     drop(vec)
 }

@@ -88,11 +88,7 @@ impl SuccessRate {
     }
 
     pub fn statistic(&mut self, success: bool) {
-        if success {
-            self.success()
-        } else {
-            self.fail()
-        }
+        if success { self.success() } else { self.fail() }
     }
 }
 
