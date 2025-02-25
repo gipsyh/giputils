@@ -1,16 +1,49 @@
-use crate::{
-    grc::Grc,
-    gvec::Gvec,
-    hash::{GHashMap, GHashSet},
-};
+use crate::{gvec::Gvec, hash::GHashMap};
 use std::{
     mem::swap,
-    ops::{Index, IndexMut},
+    ops::{Deref, DerefMut, Index, IndexMut},
 };
 
+pub struct GallocElem<T> {
+    e: T,
+    removed: bool,
+}
+
+impl<T> Deref for GallocElem<T> {
+    type Target = T;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.e
+    }
+}
+
+impl<T> DerefMut for GallocElem<T> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.e
+    }
+}
+
+impl<T> GallocElem<T> {
+    #[inline]
+    pub fn new(e: T) -> Self {
+        Self { e, removed: false }
+    }
+
+    #[inline]
+    pub fn take(self) -> T {
+        self.e
+    }
+
+    #[inline]
+    pub fn is_removed(&self) -> bool {
+        self.removed
+    }
+}
+
 pub struct Gallocator<T> {
-    data: Gvec<T>,
-    removed: Grc<GHashSet<u32>>,
+    data: Gvec<GallocElem<T>>,
 }
 
 impl<T> Gallocator<T> {
@@ -20,13 +53,18 @@ impl<T> Gallocator<T> {
 
     #[inline]
     pub fn alloc(&mut self, v: T) -> u32 {
-        self.data.push(v);
+        self.data.push(GallocElem::new(v));
         self.data.len() - 1
     }
 
     #[inline]
     pub fn dealloc(&mut self, idx: u32) {
-        self.removed.insert(idx);
+        self.data[idx].removed = true;
+    }
+
+    #[inline]
+    pub fn is_removed(&self, idx: u32) -> bool {
+        self.data[idx].is_removed()
     }
 
     #[inline]
@@ -36,17 +74,12 @@ impl<T> Gallocator<T> {
         swap(&mut self.data, &mut data);
         for (i, d) in data.into_iter().enumerate() {
             let i = i as u32;
-            if self.removed.contains(&i) {
+            if d.is_removed() {
                 continue;
             }
-            map.insert(i, self.alloc(d));
+            map.insert(i, self.alloc(d.take()));
         }
-        self.removed.clear();
         map
-    }
-
-    pub fn get_removed(&self) -> Grc<GHashSet<u32>> {
-        self.removed.clone()
     }
 }
 
@@ -69,9 +102,6 @@ impl IndexMut<u32> for Gallocator<u32> {
 impl<T> Default for Gallocator<T> {
     #[inline]
     fn default() -> Self {
-        Self {
-            data: Gvec::new(),
-            removed: Grc::new(GHashSet::new()),
-        }
+        Self { data: Gvec::new() }
     }
 }
