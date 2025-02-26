@@ -92,7 +92,7 @@ impl<T> Index<u32> for Gallocator<T> {
     }
 }
 
-impl IndexMut<u32> for Gallocator<u32> {
+impl<T> IndexMut<u32> for Gallocator<T> {
     #[inline]
     fn index_mut(&mut self, index: u32) -> &mut Self::Output {
         &mut self.data[index]
