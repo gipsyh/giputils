@@ -55,11 +55,11 @@ impl<T> Index<u32> for Gvec<T> {
 
     #[inline]
     fn index(&self, index: u32) -> &Self::Output {
-        #[cfg(feature = "no_bound_check")]
+        #[cfg(not(debug_assertions))]
         unsafe {
             self.data.get_unchecked(index as usize)
         }
-        #[cfg(not(feature = "no_bound_check"))]
+        #[cfg(debug_assertions)]
         &self.data[index as usize]
     }
 }
@@ -67,11 +67,11 @@ impl<T> Index<u32> for Gvec<T> {
 impl<T> IndexMut<u32> for Gvec<T> {
     #[inline]
     fn index_mut(&mut self, index: u32) -> &mut Self::Output {
-        #[cfg(feature = "no_bound_check")]
+        #[cfg(not(debug_assertions))]
         unsafe {
             self.data.get_unchecked_mut(index as usize)
         }
-        #[cfg(not(feature = "no_bound_check"))]
+        #[cfg(debug_assertions)]
         &mut self.data[index as usize]
     }
 }
