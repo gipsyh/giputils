@@ -1,4 +1,3 @@
-use git2::{FetchOptions, ProxyOptions};
 use std::{
     env,
     fs::remove_dir_all,
@@ -26,23 +25,40 @@ pub fn copy_build(
 }
 
 pub fn git_submodule_update() -> Result<(), String> {
-    let Ok(repo) = git2::Repository::open(".") else {
-        return Ok(());
-    };
-    for mut sm in repo.submodules().unwrap() {
-        let status = repo
-            .submodule_status(sm.name().unwrap(), git2::SubmoduleIgnore::None)
-            .unwrap();
-        if !status.is_in_wd() || status.is_wd_uninitialized() || status.is_wd_deleted() {
-            let mut proxy_options = ProxyOptions::new();
-            proxy_options.auto();
-            let mut fetch_opts = FetchOptions::new();
-            fetch_opts.proxy_options(proxy_options);
-            let mut opts = git2::SubmoduleUpdateOptions::new();
-            opts.fetch(fetch_opts);
-            sm.update(true, Some(&mut opts))
-                .map_err(|e| e.to_string())?;
-        }
+    if !Path::new(".git").exists() {
+        return Err("`.git` directory not found".to_string());
     }
+    let output = Command::new("git")
+        .args(["submodule", "status"])
+        .output()
+        .map_err(|e| e.to_string())?;
+    if !output.status.success() {
+        return Err(format!("git exited with {}", output.status));
+    }
+
+    let need_init: Vec<String> = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .filter_map(|line| {
+            line.strip_prefix('-')?;
+            line.split_whitespace().nth(1).map(str::to_owned)
+        })
+        .collect();
+
+    if need_init.is_empty() {
+        return Ok(());
+    }
+
+    let status = Command::new("git")
+        .args(["submodule", "update", "--init"])
+        .args(&need_init)
+        .status()
+        .map_err(|e| e.to_string())?;
+
+    if !status.success() {
+        return Err(format!(
+            "`git submodule update --init` failed with {status}"
+        ));
+    }
+
     Ok(())
 }
