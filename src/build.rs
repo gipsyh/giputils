@@ -26,7 +26,7 @@ pub fn copy_build(
 
 pub fn git_submodule_update() -> Result<(), String> {
     if !Path::new(".git").exists() {
-        return Err("`.git` directory not found".to_string());
+        return Ok(());
     }
     let output = Command::new("git")
         .args(["submodule", "status"])
