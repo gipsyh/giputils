@@ -15,4 +15,5 @@ crate-type = ["staticlib", "rlib"]
 
 [dependencies]
 ahash = "0.8.11"
+log = "0.4.27"
 tempfile = "3.14.0"
