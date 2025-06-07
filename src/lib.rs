@@ -1,6 +1,7 @@
 #![feature(get_mut_unchecked, exit_status_error)]
 
 pub mod allocator;
+pub mod bitvec;
 pub mod build;
 pub mod crffi;
 pub mod grc;

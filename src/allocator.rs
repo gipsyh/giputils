@@ -54,7 +54,7 @@ impl<T> Gallocator<T> {
     #[inline]
     pub fn alloc(&mut self, v: T) -> u32 {
         self.data.push(GallocElem::new(v));
-        self.data.len() - 1
+        self.data.len() as u32 - 1
     }
 
     #[inline]
