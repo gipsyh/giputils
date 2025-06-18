@@ -85,6 +85,41 @@ impl AddAssign<AverageDuration> for AverageDuration {
 }
 
 #[derive(Default, Clone, Copy)]
+pub struct CountedDuration {
+    sum: Duration,
+    num: usize,
+}
+
+impl CountedDuration {
+    #[inline]
+    pub fn count(&self) -> usize {
+        self.num
+    }
+}
+
+impl Debug for CountedDuration {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} times in {:.6?}", self.num, self.sum)
+    }
+}
+
+impl AddAssign<Duration> for CountedDuration {
+    #[inline]
+    fn add_assign(&mut self, rhs: Duration) {
+        self.sum += rhs;
+        self.num += 1;
+    }
+}
+
+impl AddAssign<CountedDuration> for CountedDuration {
+    #[inline]
+    fn add_assign(&mut self, rhs: CountedDuration) {
+        self.sum += rhs.sum;
+        self.num += rhs.num;
+    }
+}
+
+#[derive(Default, Clone, Copy)]
 pub struct SuccessRate {
     succ: usize,
     fail: usize,
@@ -139,21 +174,7 @@ impl Debug for SuccessRate {
     }
 }
 
-#[derive(Default)]
-pub struct Case(String);
-
-impl Case {
-    pub fn new<S: ToString>(s: S) -> Self {
-        Self(s.to_string())
-    }
-}
-
-impl Debug for Case {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
+#[derive(Clone)]
 pub struct RunningTime {
     start: Instant,
 }
