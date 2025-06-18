@@ -1,6 +1,6 @@
 [package]
 name = "giputils"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2024"
 license = "MIT"
 authors = ["Yuheng Su <gipsyh.icu@gmail.com>"]
@@ -15,4 +15,6 @@ crate-type = ["staticlib", "rlib"]
 
 [dependencies]
 ahash = "0.8.11"
+log = "0.4.27"
+rand = "0.9.1"
 tempfile = "3.14.0"

@@ -52,34 +52,49 @@ impl<T> Gallocator<T> {
     }
 
     #[inline]
-    pub fn alloc(&mut self, v: T) -> u32 {
+    pub fn alloc(&mut self, v: T) -> usize {
         self.data.push(GallocElem::new(v));
         self.data.len() - 1
     }
 
     #[inline]
-    pub fn dealloc(&mut self, idx: u32) {
+    pub fn dealloc(&mut self, idx: usize) {
         self.data[idx].removed = true;
     }
 
     #[inline]
-    pub fn is_removed(&self, idx: u32) -> bool {
+    pub fn is_removed(&self, idx: usize) -> bool {
         self.data[idx].is_removed()
     }
 
     #[inline]
-    pub fn gc(&mut self) -> GHashMap<u32, u32> {
+    pub fn gc(&mut self) -> GHashMap<usize, usize> {
         let mut map = GHashMap::new();
         let mut data = Gvec::new();
         swap(&mut self.data, &mut data);
         for (i, d) in data.into_iter().enumerate() {
-            let i = i as u32;
             if d.is_removed() {
                 continue;
             }
             map.insert(i, self.alloc(d.take()));
         }
         map
+    }
+}
+
+impl<T> Index<usize> for Gallocator<T> {
+    type Output = T;
+
+    #[inline]
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
+}
+
+impl<T> IndexMut<usize> for Gallocator<T> {
+    #[inline]
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.data[index]
     }
 }
 

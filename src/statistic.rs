@@ -17,6 +17,7 @@ impl Debug for Average {
 }
 
 impl AddAssign<usize> for Average {
+    #[inline]
     fn add_assign(&mut self, rhs: usize) {
         self.sum += rhs as f64;
         self.num += 1;
@@ -24,6 +25,7 @@ impl AddAssign<usize> for Average {
 }
 
 impl AddAssign<f64> for Average {
+    #[inline]
     fn add_assign(&mut self, rhs: f64) {
         self.sum += rhs;
         self.num += 1;
@@ -33,6 +35,7 @@ impl AddAssign<f64> for Average {
 impl Add<Average> for Average {
     type Output = Self;
 
+    #[inline]
     fn add(self, rhs: Average) -> Self::Output {
         Self {
             sum: self.sum + rhs.sum,
@@ -66,9 +69,18 @@ impl Debug for AverageDuration {
 }
 
 impl AddAssign<Duration> for AverageDuration {
+    #[inline]
     fn add_assign(&mut self, rhs: Duration) {
         self.sum += rhs;
         self.num += 1;
+    }
+}
+
+impl AddAssign<AverageDuration> for AverageDuration {
+    #[inline]
+    fn add_assign(&mut self, rhs: AverageDuration) {
+        self.sum += rhs.sum;
+        self.num += rhs.num;
     }
 }
 
@@ -79,14 +91,17 @@ pub struct SuccessRate {
 }
 
 impl SuccessRate {
+    #[inline]
     pub fn success(&mut self) {
         self.succ += 1;
     }
 
+    #[inline]
     pub fn fail(&mut self) {
         self.fail += 1;
     }
 
+    #[inline]
     pub fn statistic(&mut self, success: bool) {
         if success { self.success() } else { self.fail() }
     }
