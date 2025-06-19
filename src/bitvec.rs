@@ -61,6 +61,19 @@ impl BitVec {
     }
 
     #[inline]
+    pub fn set(&mut self, index: usize, val: bool) {
+        debug_assert!(index < self.len());
+        let word_index = index / 64;
+        let bit_index = index % 64;
+        let mask = 1 << bit_index;
+        if val {
+            self.bits[word_index] |= mask;
+        } else {
+            self.bits[word_index] &= !mask;
+        }
+    }
+
+    #[inline]
     #[allow(unused)]
     fn last_word(&self) -> &u64 {
         unsafe { self.bits.last().unwrap_unchecked() }
