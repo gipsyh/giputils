@@ -1,7 +1,7 @@
 use crate::gvec::Gvec;
 use rand::rngs::StdRng;
 use std::{
-    fmt::{Debug, Display},
+    fmt::{self, Debug, Display},
     hash::Hash,
     ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not},
 };
@@ -249,7 +249,7 @@ impl BitXorAssign<&BitVec> for BitVec {
 }
 
 impl Display for BitVec {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
         for i in 0..self.len() {
             if self.get(i) {
@@ -263,9 +263,15 @@ impl Display for BitVec {
 }
 
 impl Debug for BitVec {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        Display::fmt(&self, f)
+    }
+}
+
+impl fmt::Binary for BitVec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
-        for i in 0..self.len() {
+        for i in (0..self.len()).rev() {
             if self.get(i) {
                 s.push('1');
             } else {
