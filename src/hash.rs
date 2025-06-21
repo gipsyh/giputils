@@ -1,11 +1,12 @@
 use ahash::{HashMap, HashSet, RandomState};
 use std::{
     collections::{hash_map, hash_set},
+    fmt::{self, Debug},
     hash::Hash,
     ops::{Deref, DerefMut},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct GHashSet<T> {
     h: HashSet<T>,
 }
@@ -62,7 +63,14 @@ impl<T: Eq + Hash> FromIterator<T> for GHashSet<T> {
     }
 }
 
-#[derive(Debug, Clone)]
+impl<T: Debug> Debug for GHashSet<T> {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.h.fmt(f)
+    }
+}
+
+#[derive(Clone)]
 pub struct GHashMap<K, V> {
     h: HashMap<K, V>,
 }
@@ -116,5 +124,12 @@ impl<K: Eq + Hash, V> FromIterator<(K, V)> for GHashMap<K, V> {
         let mut h = HashMap::with_hasher(hb);
         h.extend(iter);
         Self { h }
+    }
+}
+
+impl<K: Debug, V: Debug> Debug for GHashMap<K, V> {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.h.fmt(f)
     }
 }
