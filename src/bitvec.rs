@@ -1,4 +1,5 @@
 use crate::gvec::Gvec;
+use core::panic;
 use rand::rngs::StdRng;
 use std::{
     fmt::{self, Debug, Display},
@@ -14,6 +15,7 @@ pub struct BitVec {
 
 impl BitVec {
     pub const WORD_SIZE: usize = 64;
+    pub const WORD_SIZE_MASK: usize = Self::WORD_SIZE - 1;
 
     #[inline]
     pub fn new() -> Self {
@@ -32,7 +34,7 @@ impl BitVec {
     pub fn new_with(len: usize, val: bool) -> Self {
         let v = if val { u64::MAX } else { 0 };
         let mut bits = Gvec::from(vec![v; len / Self::WORD_SIZE]);
-        let mut last_len = len % Self::WORD_SIZE;
+        let mut last_len = len & Self::WORD_SIZE_MASK;
         if last_len == 0 {
             last_len = 64;
         } else {
@@ -47,8 +49,22 @@ impl BitVec {
     }
 
     #[inline]
+    pub fn word_len(&self) -> usize {
+        let mut res = self.bits.len();
+        if self.last_len == 0 {
+            res -= 1
+        }
+        res
+    }
+
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    #[inline]
+    pub fn clear(&mut self) {
+        *self = Self::default();
     }
 
     #[inline]
@@ -85,7 +101,7 @@ impl BitVec {
     }
 
     #[inline]
-    fn mast_last(&mut self) {
+    fn mask_last(&mut self) {
         if self.last_len == 64 {
             return;
         }
@@ -108,6 +124,18 @@ impl BitVec {
         }
         self.last_len += 1;
     }
+    #[inline]
+    pub fn push_word(&mut self, word: u64) {
+        if self.last_len == 0 {
+            let l = self.bits.len() - 1;
+            self.bits[l] = word;
+            self.last_len = 64;
+        } else if self.last_len == 64 {
+            self.bits.push(word);
+        } else {
+            panic!();
+        }
+    }
 }
 
 impl Default for BitVec {
@@ -126,7 +154,7 @@ impl PartialEq for BitVec {
         if self.len() != other.len() {
             return false;
         }
-        for i in 0..self.bits.len() {
+        for i in 0..self.word_len() {
             if self.bits[i] != other.bits[i] {
                 return false;
             }
@@ -140,10 +168,10 @@ impl Eq for BitVec {}
 impl Hash for BitVec {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        for &bit in self.bits.iter() {
+        for &bit in self.bits.iter().take(self.word_len()) {
             bit.hash(state);
         }
-        self.last_len.hash(state);
+        (self.last_len & Self::WORD_SIZE_MASK).hash(state);
     }
 }
 
@@ -156,7 +184,7 @@ impl Not for &BitVec {
         for r in res.bits.iter_mut() {
             *r = !*r;
         }
-        res.mast_last();
+        res.mask_last();
         res
     }
 }
@@ -212,7 +240,7 @@ impl BitXor for BitVec {
                 .collect(),
             last_len: self.last_len,
         };
-        res.mast_last();
+        res.mask_last();
         res
     }
 }
@@ -244,7 +272,7 @@ impl BitXorAssign<&BitVec> for BitVec {
         for (s, r) in self.bits.iter_mut().zip(rhs.bits.iter()) {
             *s ^= r;
         }
-        self.mast_last();
+        self.mask_last();
     }
 }
 
@@ -287,7 +315,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
+    fn test0() {
         let mut bv = BitVec::new();
         let v = [true, false, true, false, true];
         for &x in &v {
