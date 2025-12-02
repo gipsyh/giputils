@@ -226,6 +226,20 @@ impl BitVec {
             end: self.len(),
         }
     }
+
+    #[inline]
+    pub fn bool(&self) -> bool {
+        if self.len() == 1 {
+            self.get(0)
+        } else {
+            panic!();
+        }
+    }
+
+    #[inline]
+    pub fn try_bool(&self) -> Option<bool> {
+        (self.len() == 1).then(|| self.get(0))
+    }
 }
 
 pub struct Iter<'a> {
