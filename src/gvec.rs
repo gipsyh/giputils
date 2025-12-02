@@ -94,6 +94,32 @@ impl<T> IndexMut<u32> for Gvec<T> {
     }
 }
 
+impl<T> Index<i32> for Gvec<T> {
+    type Output = T;
+
+    #[inline]
+    fn index(&self, index: i32) -> &Self::Output {
+        #[cfg(not(debug_assertions))]
+        unsafe {
+            self.data.get_unchecked(index as usize)
+        }
+        #[cfg(debug_assertions)]
+        &self.data[index as usize]
+    }
+}
+
+impl<T> IndexMut<i32> for Gvec<T> {
+    #[inline]
+    fn index_mut(&mut self, index: i32) -> &mut Self::Output {
+        #[cfg(not(debug_assertions))]
+        unsafe {
+            self.data.get_unchecked_mut(index as usize)
+        }
+        #[cfg(debug_assertions)]
+        &mut self.data[index as usize]
+    }
+}
+
 impl<T> Index<usize> for Gvec<T> {
     type Output = T;
 

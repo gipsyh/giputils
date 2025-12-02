@@ -31,7 +31,10 @@ impl BitVec {
     }
 
     #[inline]
-    pub fn new_with(len: usize, val: bool) -> Self {
+    pub fn from_elem(len: usize, val: bool) -> Self {
+        if len == 0 {
+            return Self::default();
+        }
         let v = if val { u64::MAX } else { 0 };
         let mut bits = Gvec::from(vec![v; len / Self::WORD_SIZE]);
         let mut last_len = len & Self::WORD_SIZE_MASK;
@@ -41,6 +44,23 @@ impl BitVec {
             bits.push(if val { (1 << last_len) - 1 } else { 0 });
         }
         Self { bits, last_len }
+    }
+
+    pub fn from_usize(len: usize, v: usize) -> Self {
+        if len == 0 {
+            return Self::default();
+        }
+        let mut res = Self::zero(len);
+        res.bits[0] = v as u64;
+        res.mask_last();
+        res
+    }
+
+    pub fn to_usize(&self) -> usize {
+        if self.is_empty() {
+            return 0;
+        }
+        self.bits[0usize] as usize
     }
 
     #[inline]
@@ -135,6 +155,68 @@ impl BitVec {
         } else {
             panic!();
         }
+    }
+
+    #[inline]
+    pub fn zero(len: usize) -> Self {
+        debug_assert!(len > 0);
+        Self::from_elem(len, false)
+    }
+
+    #[inline]
+    pub fn ones(len: usize) -> Self {
+        debug_assert!(len > 0);
+        Self::from_elem(len, true)
+    }
+
+    #[inline]
+    pub fn one(len: usize) -> Self {
+        debug_assert!(len > 0);
+        let mut r = Self::from_elem(len, false);
+        r.set(0, true);
+        r
+    }
+
+    #[inline]
+    pub fn is_zero(&self) -> bool {
+        debug_assert!(!self.is_empty());
+        for i in 0..self.word_len() {
+            if self.bits[i] != 0 {
+                return false;
+            }
+        }
+        true
+    }
+
+    #[inline]
+    pub fn is_one(&self) -> bool {
+        debug_assert!(!self.is_empty());
+        if self.bits[0] != 1u64 {
+            return false;
+        }
+        for i in 1..self.word_len() {
+            if self.bits[i] != 0 {
+                return false;
+            }
+        }
+        true
+    }
+
+    #[inline]
+    pub fn is_ones(&self) -> bool {
+        debug_assert!(!self.is_empty());
+        let wl = self.word_len();
+        for i in 0..wl - 1 {
+            if self.bits[i] != u64::MAX {
+                return false;
+            }
+        }
+        let mask = if self.last_len == 64 {
+            u64::MAX
+        } else {
+            (1u64 << self.last_len) - 1
+        };
+        self.bits[wl - 1] == mask
     }
 }
 
@@ -276,7 +358,18 @@ impl BitXorAssign<&BitVec> for BitVec {
     }
 }
 
-impl Display for BitVec {
+impl<'a, I: IntoIterator<Item = &'a bool>> From<I> for BitVec {
+    #[inline]
+    fn from(value: I) -> Self {
+        let mut r = Self::new();
+        for x in value.into_iter() {
+            r.push(*x);
+        }
+        r
+    }
+}
+
+impl Debug for BitVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
         for i in 0..self.len() {
@@ -286,27 +379,19 @@ impl Display for BitVec {
                 s.push('0');
             }
         }
-        write!(f, "{s}")
+        write!(f, "[{s}]")
     }
 }
 
-impl Debug for BitVec {
+impl Display for BitVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        Display::fmt(&self, f)
+        Debug::fmt(&self, f)
     }
 }
 
 impl fmt::Binary for BitVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut s = String::new();
-        for i in (0..self.len()).rev() {
-            if self.get(i) {
-                s.push('1');
-            } else {
-                s.push('0');
-            }
-        }
-        write!(f, "{s}")
+        Debug::fmt(&self, f)
     }
 }
 
@@ -324,5 +409,32 @@ mod tests {
         for i in 0..bv.len() {
             assert_eq!(bv.get(i), v[i]);
         }
+    }
+
+    #[test]
+    fn test1() {
+        let bv = BitVec::from_elem(0, true);
+        assert!(bv.is_empty());
+    }
+
+    #[test]
+    fn test2() {
+        for w in 1..200 {
+            let one = BitVec::one(w);
+            assert!(one.is_one());
+            let ones = BitVec::ones(w);
+            assert!(ones.is_ones());
+            let zero = BitVec::zero(w);
+            assert!(zero.is_zero());
+        }
+    }
+
+    #[test]
+    fn test3() {
+        let v = 12345;
+        let bv = BitVec::from_usize(64, v);
+        assert_eq!(bv.to_usize(), v);
+        let bv2 = BitVec::from_usize(10, v);
+        assert_eq!(bv2.to_usize(), v & ((1 << 10) - 1));
     }
 }
