@@ -220,13 +220,18 @@ impl BitVec {
     }
 
     pub fn iter(&self) -> Iter<'_> {
-        Iter { bv: self, pos: 0 }
+        Iter {
+            bv: self,
+            start: 0,
+            end: self.len(),
+        }
     }
 }
 
 pub struct Iter<'a> {
     bv: &'a BitVec,
-    pos: usize,
+    start: usize,
+    end: usize,
 }
 
 impl<'a> Iterator for Iter<'a> {
@@ -234,15 +239,35 @@ impl<'a> Iterator for Iter<'a> {
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        if self.pos < self.bv.len() {
-            let res = self.bv.get(self.pos);
-            self.pos += 1;
+        if self.start < self.end {
+            let res = self.bv.get(self.start);
+            self.start += 1;
             Some(res)
         } else {
             None
         }
     }
+
+    #[inline]
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.end - self.start;
+        (len, Some(len))
+    }
 }
+
+impl<'a> DoubleEndedIterator for Iter<'a> {
+    #[inline]
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.start < self.end {
+            self.end -= 1;
+            Some(self.bv.get(self.end))
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a> ExactSizeIterator for Iter<'a> {}
 
 impl<'a> IntoIterator for &'a BitVec {
     type Item = bool;
@@ -255,7 +280,8 @@ impl<'a> IntoIterator for &'a BitVec {
 
 pub struct IntoIter {
     bv: BitVec,
-    pos: usize,
+    start: usize,
+    end: usize,
 }
 
 impl Iterator for IntoIter {
@@ -263,22 +289,47 @@ impl Iterator for IntoIter {
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        if self.pos < self.bv.len() {
-            let res = self.bv.get(self.pos);
-            self.pos += 1;
+        if self.start < self.end {
+            let res = self.bv.get(self.start);
+            self.start += 1;
             Some(res)
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.end - self.start;
+        (len, Some(len))
+    }
+}
+
+impl DoubleEndedIterator for IntoIter {
+    #[inline]
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.start < self.end {
+            self.end -= 1;
+            Some(self.bv.get(self.end))
         } else {
             None
         }
     }
 }
 
+impl ExactSizeIterator for IntoIter {}
+
 impl IntoIterator for BitVec {
     type Item = bool;
     type IntoIter = IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        IntoIter { bv: self, pos: 0 }
+        let len = self.len();
+        IntoIter {
+            bv: self,
+            start: 0,
+            end: len,
+        }
     }
 }
 
@@ -609,5 +660,35 @@ mod tests {
         assert_eq!(bv.len(), 5);
         assert_eq!(bv.get(3), false);
         assert_eq!(bv.get(4), true);
+    }
+
+    #[test]
+    fn test_double_ended_iter() {
+        let v = [true, false, true, true, false, true, false, false];
+        let bv = BitVec::from(&v);
+
+        let mut iter = bv.iter();
+        let mut v_iter = v.iter().copied();
+        while v_iter.len() > 0 {
+            if v_iter.len() % 2 == 0 {
+                assert_eq!(iter.next(), v_iter.next());
+            } else {
+                assert_eq!(iter.next_back(), v_iter.next_back());
+            }
+        }
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next_back(), None);
+
+        let mut iter = bv.clone().into_iter();
+        let mut v_iter = v.iter().copied();
+        while v_iter.len() > 0 {
+            if v_iter.len() % 2 != 0 {
+                assert_eq!(iter.next(), v_iter.next());
+            } else {
+                assert_eq!(iter.next_back(), v_iter.next_back());
+            }
+        }
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next_back(), None);
     }
 }
