@@ -431,6 +431,22 @@ impl<'a, I: IntoIterator<Item = &'a bool>> From<I> for BitVec {
     }
 }
 
+impl Extend<bool> for BitVec {
+    fn extend<T: IntoIterator<Item = bool>>(&mut self, iter: T) {
+        for x in iter {
+            self.push(x);
+        }
+    }
+}
+
+impl<'a> Extend<&'a bool> for BitVec {
+    fn extend<T: IntoIterator<Item = &'a bool>>(&mut self, iter: T) {
+        for x in iter {
+            self.push(*x);
+        }
+    }
+}
+
 impl Debug for BitVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.is_empty() {
@@ -578,5 +594,20 @@ mod tests {
         let expected_suffix = "1".repeat(65);
         assert!(s_large.ends_with(&expected_suffix));
         assert!(s_large.starts_with('0'));
+    }
+
+    #[test]
+    fn test_extend() {
+        let mut bv = BitVec::new();
+        bv.extend([true, false, true]);
+        assert_eq!(bv.len(), 3);
+        assert_eq!(bv.get(0), true);
+        assert_eq!(bv.get(1), false);
+        assert_eq!(bv.get(2), true);
+
+        bv.extend(&[false, true]);
+        assert_eq!(bv.len(), 5);
+        assert_eq!(bv.get(3), false);
+        assert_eq!(bv.get(4), true);
     }
 }
