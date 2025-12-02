@@ -24,6 +24,9 @@ impl BitVec {
 
     #[inline]
     pub fn new_rand(num_word: usize, rng: &mut StdRng) -> Self {
+        if num_word == 0 {
+            return Self::default();
+        }
         Self {
             bits: Gvec::new_rand(num_word, rng),
             last_len: 64,
@@ -159,7 +162,6 @@ impl BitVec {
 
     #[inline]
     pub fn zero(len: usize) -> Self {
-        debug_assert!(len > 0);
         Self::from_elem(len, false)
     }
 
