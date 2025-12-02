@@ -566,6 +566,7 @@ impl fmt::Binary for BitVec {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::hash::GHashSet;
 
     #[test]
     fn test0() {
@@ -690,5 +691,19 @@ mod tests {
         }
         assert_eq!(iter.next(), None);
         assert_eq!(iter.next_back(), None);
+    }
+
+    #[test]
+    fn test_hash_eq() {
+        let a = BitVec::ones(64);
+        let b = BitVec {
+            bits: Gvec::from([u64::MAX, 0]),
+            last_len: 0,
+        };
+        assert!(a == b);
+        let mut s = GHashSet::new();
+        s.insert(a);
+        s.insert(b);
+        assert!(s.len() == 1);
     }
 }
