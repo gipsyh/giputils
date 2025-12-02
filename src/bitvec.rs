@@ -218,6 +218,68 @@ impl BitVec {
         };
         self.bits[wl - 1] == mask
     }
+
+    pub fn iter(&self) -> Iter<'_> {
+        Iter { bv: self, pos: 0 }
+    }
+}
+
+pub struct Iter<'a> {
+    bv: &'a BitVec,
+    pos: usize,
+}
+
+impl<'a> Iterator for Iter<'a> {
+    type Item = bool;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pos < self.bv.len() {
+            let res = self.bv.get(self.pos);
+            self.pos += 1;
+            Some(res)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a> IntoIterator for &'a BitVec {
+    type Item = bool;
+    type IntoIter = Iter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+pub struct IntoIter {
+    bv: BitVec,
+    pos: usize,
+}
+
+impl Iterator for IntoIter {
+    type Item = bool;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pos < self.bv.len() {
+            let res = self.bv.get(self.pos);
+            self.pos += 1;
+            Some(res)
+        } else {
+            None
+        }
+    }
+}
+
+impl IntoIterator for BitVec {
+    type Item = bool;
+    type IntoIter = IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter { bv: self, pos: 0 }
+    }
 }
 
 impl Default for BitVec {
@@ -371,21 +433,60 @@ impl<'a, I: IntoIterator<Item = &'a bool>> From<I> for BitVec {
 
 impl Debug for BitVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.is_empty() {
+            return write!(f, "[]");
+        }
         let mut s = String::new();
-        for i in 0..self.len() {
+        for i in (0..self.len()).rev() {
             if self.get(i) {
                 s.push('1');
             } else {
                 s.push('0');
             }
         }
-        write!(f, "[{s}]")
+        write!(f, "{s}")
     }
 }
 
 impl Display for BitVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Debug::fmt(&self, f)
+    }
+}
+
+impl fmt::LowerHex for BitVec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.is_empty() {
+            return write!(f, "[]");
+        }
+        write!(f, "0x")?;
+        if self.is_zero() {
+            return write!(f, "0");
+        }
+        let wl = self.word_len();
+        write!(f, "{:x}", self.bits[wl - 1])?;
+        for i in (0..wl - 1).rev() {
+            write!(f, "{:016x}", self.bits[i])?;
+        }
+        Ok(())
+    }
+}
+
+impl fmt::UpperHex for BitVec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.is_empty() {
+            return write!(f, "[]");
+        }
+        write!(f, "0x")?;
+        if self.is_zero() {
+            return write!(f, "0");
+        }
+        let wl = self.word_len();
+        write!(f, "{:X}", self.bits[wl - 1])?;
+        for i in (0..wl - 1).rev() {
+            write!(f, "{:016X}", self.bits[i])?;
+        }
+        Ok(())
     }
 }
 
@@ -401,11 +502,8 @@ mod tests {
 
     #[test]
     fn test0() {
-        let mut bv = BitVec::new();
         let v = [true, false, true, false, true];
-        for &x in &v {
-            bv.push(x);
-        }
+        let bv = BitVec::from(&v);
         for i in 0..bv.len() {
             assert_eq!(bv.get(i), v[i]);
         }
@@ -436,5 +534,49 @@ mod tests {
         assert_eq!(bv.to_usize(), v);
         let bv2 = BitVec::from_usize(10, v);
         assert_eq!(bv2.to_usize(), v & ((1 << 10) - 1));
+    }
+
+    #[test]
+    fn test4() {
+        let v = [true, false, true, true, false];
+        let bv = BitVec::from(&v);
+        let mut iter = bv.iter();
+        for &val in &v {
+            assert_eq!(iter.next(), Some(val));
+        }
+        assert_eq!(iter.next(), None);
+        for (i, val) in bv.into_iter().enumerate() {
+            assert_eq!(val, v[i]);
+        }
+    }
+
+    #[test]
+    fn test_fmt() {
+        let z = BitVec::new();
+        assert_eq!(format!("{}", z), "[]");
+        assert_eq!(format!("{:x}", z), "[]");
+        assert_eq!(format!("{:X}", z), "[]");
+
+        let v = 12345;
+        let bv = BitVec::from_usize(64, v);
+        let s = format!("{}", bv);
+        assert_eq!(s.len(), 64);
+        assert!(s.ends_with("11000000111001"));
+
+        assert_eq!(format!("{:x}", bv), "0x3039");
+        assert_eq!(format!("{:X}", bv), "0x3039");
+
+        let mut bv_large = BitVec::zero(128);
+        bv_large.bits[0] = u64::MAX;
+        bv_large.bits[1] = 1_u64;
+
+        assert_eq!(format!("{:x}", bv_large), "0x1ffffffffffffffff");
+        assert_eq!(format!("{:X}", bv_large), "0x1FFFFFFFFFFFFFFFF");
+
+        let s_large = format!("{}", bv_large);
+        assert_eq!(s_large.len(), 128);
+        let expected_suffix = "1".repeat(65);
+        assert!(s_large.ends_with(&expected_suffix));
+        assert!(s_large.starts_with('0'));
     }
 }
