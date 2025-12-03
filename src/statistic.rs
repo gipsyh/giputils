@@ -181,13 +181,18 @@ pub struct RunningTime {
 
 impl RunningTime {
     #[inline]
-    pub fn start(&self) -> Duration {
+    pub fn label(&self) -> Duration {
         self.start.elapsed()
     }
 
     #[inline]
-    pub fn stop(&self, start: Duration) -> Duration {
+    pub fn from_label(&self, start: Duration) -> Duration {
         self.start.elapsed() - start
+    }
+
+    #[inline]
+    pub fn time(&self) -> Duration {
+        self.start.elapsed()
     }
 }
 
