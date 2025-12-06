@@ -63,7 +63,7 @@ macro_rules! define_rc_wrapper {
         impl<T> DerefMut for $wrapper<T> {
             #[inline]
             fn deref_mut(&mut self) -> &mut Self::Target {
-                unsafe { $inner::get_mut_unchecked(&mut self.inner) }
+                unsafe { &mut *($inner::as_ptr(&self.inner) as *mut T) }
             }
         }
 
