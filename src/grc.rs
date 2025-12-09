@@ -1,7 +1,6 @@
 use std::{
     hash::{Hash, Hasher},
     ops::{Deref, DerefMut},
-    rc::Rc,
     sync::Arc,
 };
 
@@ -96,5 +95,5 @@ macro_rules! define_rc_wrapper {
     };
 }
 
-define_rc_wrapper!(Grc, Rc);
+define_rc_wrapper!(Grc, Arc);
 define_rc_wrapper!(Garc, Arc);
