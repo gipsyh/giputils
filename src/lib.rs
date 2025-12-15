@@ -2,6 +2,7 @@ pub mod allocator;
 pub mod bitvec;
 pub mod build;
 pub mod crffi;
+pub mod file;
 pub mod grc;
 pub mod gvec;
 pub mod hash;
