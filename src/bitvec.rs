@@ -487,11 +487,81 @@ impl BitXorAssign<&BitVec> for BitVec {
     }
 }
 
-impl<'a, I: IntoIterator<Item = &'a bool>> From<I> for BitVec {
+impl<const N: usize> From<[bool; N]> for BitVec {
     #[inline]
-    fn from(value: I) -> Self {
+    fn from(s: [bool; N]) -> Self {
         let mut r = Self::new();
-        for x in value.into_iter() {
+        for x in s.into_iter() {
+            r.push(x);
+        }
+        r
+    }
+}
+
+impl<const N: usize> From<&[bool; N]> for BitVec {
+    #[inline]
+    fn from(s: &[bool; N]) -> Self {
+        let mut r = Self::new();
+        for x in s {
+            r.push(*x);
+        }
+        r
+    }
+}
+
+impl From<&[bool]> for BitVec {
+    #[inline]
+    fn from(s: &[bool]) -> Self {
+        let mut r = Self::new();
+        for x in s.iter() {
+            r.push(*x);
+        }
+        r
+    }
+}
+
+impl From<&Vec<bool>> for BitVec {
+    #[inline]
+    fn from(s: &Vec<bool>) -> Self {
+        let mut r = Self::new();
+        for x in s.iter() {
+            r.push(*x);
+        }
+        r
+    }
+}
+
+impl From<&str> for BitVec {
+    #[inline]
+    fn from(value: &str) -> Self {
+        let mut r = Self::new();
+        for c in value.chars().rev() {
+            match c {
+                '1' => r.push(true),
+                '0' => r.push(false),
+                _ => panic!("Invalid character in bit string"),
+            }
+        }
+        r
+    }
+}
+
+impl FromIterator<bool> for BitVec {
+    #[inline]
+    fn from_iter<T: IntoIterator<Item = bool>>(iter: T) -> Self {
+        let mut r = Self::new();
+        for x in iter.into_iter() {
+            r.push(x);
+        }
+        r
+    }
+}
+
+impl<'a> FromIterator<&'a bool> for BitVec {
+    #[inline]
+    fn from_iter<T: IntoIterator<Item = &'a bool>>(iter: T) -> Self {
+        let mut r = Self::new();
+        for x in iter.into_iter() {
             r.push(*x);
         }
         r
@@ -587,7 +657,7 @@ mod tests {
     #[test]
     fn test0() {
         let v = [true, false, true, false, true];
-        let bv = BitVec::from(&v);
+        let bv = BitVec::from(v);
         for i in 0..bv.len() {
             assert_eq!(bv.get(i), v[i]);
         }
@@ -623,7 +693,7 @@ mod tests {
     #[test]
     fn test4() {
         let v = [true, false, true, true, false];
-        let bv = BitVec::from(&v);
+        let bv = BitVec::from(v);
         let mut iter = bv.iter();
         for &val in &v {
             assert_eq!(iter.next(), Some(val));
@@ -682,7 +752,7 @@ mod tests {
     #[test]
     fn test_double_ended_iter() {
         let v = [true, false, true, true, false, true, false, false];
-        let bv = BitVec::from(&v);
+        let bv = BitVec::from(v);
 
         let mut iter = bv.iter();
         let mut v_iter = v.iter().copied();
@@ -721,5 +791,14 @@ mod tests {
         s.insert(a);
         s.insert(b);
         assert!(s.len() == 1);
+    }
+
+    #[test]
+    fn test_from_iter_str() {
+        let bv0 = BitVec::from_usize(2, 2);
+        let bv1 = BitVec::from_iter([false, true]);
+        let bv2 = BitVec::from("10");
+        assert!(bv0 == bv1);
+        assert!(bv0 == bv2);
     }
 }
