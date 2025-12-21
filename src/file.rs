@@ -31,3 +31,16 @@ pub fn remove_if_exists<P: AsRef<Path>>(path: P) -> io::Result<()> {
         Err(e) => Err(e),
     }
 }
+
+pub fn create_dir_if_not_exists<P: AsRef<Path>>(path: P) -> io::Result<()> {
+    let path = path.as_ref();
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+    } else if !path.is_dir() {
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            "path exists but is not a directory",
+        ));
+    }
+    Ok(())
+}
