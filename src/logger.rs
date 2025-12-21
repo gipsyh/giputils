@@ -1,4 +1,4 @@
-use log::{Level, log};
+use log::{Level, LevelFilter, log, max_level, set_max_level};
 use std::{
     fmt::Display,
     time::{Duration, Instant},
@@ -33,4 +33,15 @@ impl Default for IntervalLogger {
     fn default() -> Self {
         Self::new(Duration::from_secs(10))
     }
+}
+
+pub fn with_log_level<F, R>(level: LevelFilter, f: F) -> R
+where
+    F: FnOnce() -> R,
+{
+    let prev_level = max_level();
+    set_max_level(level);
+    let result = f();
+    set_max_level(prev_level);
+    result
 }
