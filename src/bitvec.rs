@@ -244,6 +244,20 @@ impl BitVec {
     }
 }
 
+impl AsRef<Self> for BitVec {
+    #[inline]
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
+
+impl AsMut<Self> for BitVec {
+    #[inline]
+    fn as_mut(&mut self) -> &mut Self {
+        self
+    }
+}
+
 pub struct Iter<'a> {
     bv: &'a BitVec,
     start: usize,
