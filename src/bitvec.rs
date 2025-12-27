@@ -400,92 +400,108 @@ impl Not for &BitVec {
     }
 }
 
-impl BitAnd for BitVec {
-    type Output = Self;
+macro_rules! impl_bitop_owned_and_ref {
+    (
+        trait = $trait:ident,
+        method = $method:ident,
+        op = $op:tt,
+    ) => {
+        impl<R: AsRef<BitVec>> $trait<R> for BitVec {
+            type Output = BitVec;
 
-    #[inline]
-    fn bitand(self, rhs: Self) -> Self::Output {
-        assert!(self.len() == rhs.len());
-        Self {
-            bits: self
-                .bits
-                .iter()
-                .zip(rhs.bits.iter())
-                .map(|(s, r)| s & r)
-                .collect(),
-            last_len: self.last_len,
+            #[inline]
+            fn $method(self, rhs: R) -> Self::Output {
+                assert!(self.len() == rhs.as_ref().len());
+                let mut res = BitVec {
+                    bits: self
+                        .bits
+                        .iter()
+                        .zip(rhs.as_ref().bits.iter())
+                        .map(|(s, r)| s $op r)
+                        .collect(),
+                    last_len: self.last_len,
+                };
+                res.mask_last();
+                res
+            }
         }
-    }
-}
 
-impl BitOr for BitVec {
-    type Output = Self;
+        impl<R: AsRef<BitVec>> $trait<R> for &BitVec {
+            type Output = BitVec;
 
-    #[inline]
-    fn bitor(self, rhs: Self) -> Self::Output {
-        assert!(self.len() == rhs.len());
-        Self {
-            bits: self
-                .bits
-                .iter()
-                .zip(rhs.bits.iter())
-                .map(|(s, r)| s | r)
-                .collect(),
-            last_len: self.last_len,
+            #[inline]
+            fn $method(self, rhs: R) -> Self::Output {
+                assert!(self.len() == rhs.as_ref().len());
+                let mut res = BitVec {
+                    bits: self
+                        .bits
+                        .iter()
+                        .zip(rhs.as_ref().bits.iter())
+                        .map(|(s, r)| s $op r)
+                        .collect(),
+                    last_len: self.last_len,
+                };
+                res.mask_last();
+                res
+            }
         }
-    }
+    };
 }
 
-impl BitXor for BitVec {
-    type Output = Self;
-
-    #[inline]
-    fn bitxor(self, rhs: Self) -> Self::Output {
-        assert!(self.len() == rhs.len());
-        let mut res = Self {
-            bits: self
-                .bits
-                .iter()
-                .zip(rhs.bits.iter())
-                .map(|(s, r)| s ^ r)
-                .collect(),
-            last_len: self.last_len,
-        };
-        res.mask_last();
-        res
-    }
-}
-
-impl BitAndAssign<&BitVec> for BitVec {
-    #[inline]
-    fn bitand_assign(&mut self, rhs: &Self) {
-        assert!(self.len() == rhs.len());
-        for (s, r) in self.bits.iter_mut().zip(rhs.bits.iter()) {
-            *s &= r;
+macro_rules! impl_bitassign_ref {
+    (
+        trait = $trait:ident,
+        method = $method:ident,
+        op = $op:tt,
+    ) => {
+        impl $trait<&BitVec> for BitVec {
+            #[inline]
+            fn $method(&mut self, rhs: &BitVec) {
+                assert!(self.len() == rhs.len());
+                for (s, r) in self.bits.iter_mut().zip(rhs.bits.iter()) {
+                    *s $op r;
+                }
+                self.mask_last();
+            }
         }
-    }
+    };
 }
 
-impl BitOrAssign<&BitVec> for BitVec {
-    #[inline]
-    fn bitor_assign(&mut self, rhs: &BitVec) {
-        assert!(self.len() == rhs.len());
-        for (s, r) in self.bits.iter_mut().zip(rhs.bits.iter()) {
-            *s |= r;
-        }
-    }
-}
+impl_bitop_owned_and_ref!(
+    trait = BitAnd,
+    method = bitand,
+    op = &,
+);
 
-impl BitXorAssign<&BitVec> for BitVec {
-    #[inline]
-    fn bitxor_assign(&mut self, rhs: &BitVec) {
-        assert!(self.len() == rhs.len());
-        for (s, r) in self.bits.iter_mut().zip(rhs.bits.iter()) {
-            *s ^= r;
-        }
-        self.mask_last();
-    }
-}
+impl_bitop_owned_and_ref!(
+    trait = BitOr,
+    method = bitor,
+    op = |,
+);
+
+impl_bitop_owned_and_ref!(
+    trait = BitXor,
+    method = bitxor,
+    op = ^,
+);
+
+impl_bitassign_ref!(
+    trait = BitAndAssign,
+    method = bitand_assign,
+    op = &=,
+);
+
+impl_bitassign_ref!(
+    trait = BitOrAssign,
+    method = bitor_assign,
+    op = |=,
+);
+
+impl_bitassign_ref!(
+    trait = BitXorAssign,
+    method = bitxor_assign,
+    op = ^=,
+);
 
 impl<const N: usize> From<[bool; N]> for BitVec {
     #[inline]

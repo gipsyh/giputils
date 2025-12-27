@@ -37,10 +37,7 @@ pub fn create_dir_if_not_exists<P: AsRef<Path>>(path: P) -> io::Result<()> {
     if !path.exists() {
         fs::create_dir_all(path)?;
     } else if !path.is_dir() {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
-            "path exists but is not a directory",
-        ));
+        return Err(io::Error::other("path exists but is not a directory"));
     }
     Ok(())
 }
