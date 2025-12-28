@@ -1,14 +1,12 @@
 use std::{
     env,
     fs::remove_dir_all,
+    io,
     path::{Path, PathBuf},
     process::Command,
 };
 
-pub fn copy_build(
-    src: &str,
-    f: impl FnOnce(&Path) -> Result<(), String>,
-) -> Result<PathBuf, String> {
+pub fn copy_build(src: &str, f: impl FnOnce(&Path) -> io::Result<()>) -> io::Result<PathBuf> {
     let src_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join(src);
     let cp_dir = PathBuf::from(env::var("OUT_DIR").unwrap()).join(src);
     if cp_dir.exists() {
@@ -18,22 +16,21 @@ pub fn copy_build(
         .arg("-r")
         .arg(src_dir.as_path())
         .arg(&cp_dir)
-        .status()
-        .map_err(|e| e.to_string())?;
+        .status()?;
     f(&cp_dir)?;
     Ok(cp_dir)
 }
 
-pub fn git_submodule_update() -> Result<(), String> {
+pub fn git_submodule_update() -> io::Result<()> {
     if !Path::new(".git").exists() {
         return Ok(());
     }
-    let output = Command::new("git")
-        .args(["submodule", "status"])
-        .output()
-        .map_err(|e| e.to_string())?;
+    let output = Command::new("git").args(["submodule", "status"]).output()?;
     if !output.status.success() {
-        return Err(format!("git exited with {}", output.status));
+        return Err(io::Error::other(format!(
+            "git exited with {}",
+            output.status
+        )));
     }
 
     let need_init: Vec<String> = String::from_utf8_lossy(&output.stdout)
@@ -51,13 +48,12 @@ pub fn git_submodule_update() -> Result<(), String> {
     let status = Command::new("git")
         .args(["submodule", "update", "--init"])
         .args(&need_init)
-        .status()
-        .map_err(|e| e.to_string())?;
+        .status()?;
 
     if !status.success() {
-        return Err(format!(
+        return Err(io::Error::other(format!(
             "`git submodule update --init` failed with {status}"
-        ));
+        )));
     }
 
     Ok(())
