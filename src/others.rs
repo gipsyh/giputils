@@ -89,3 +89,7 @@ impl DerefMut for OptionU32 {
         &mut self.0
     }
 }
+
+pub trait StopCtrl {
+    fn stop(&mut self);
+}
