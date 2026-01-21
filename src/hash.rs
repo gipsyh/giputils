@@ -71,6 +71,15 @@ impl<T: Debug> Debug for GHashSet<T> {
     }
 }
 
+impl<T: Eq + Hash> PartialEq for GHashSet<T> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.h == other.h
+    }
+}
+
+impl<T: Eq + Hash> Eq for GHashSet<T> {}
+
 impl<T: Serialize> Serialize for GHashSet<T> {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -157,6 +166,15 @@ impl<K: Debug, V: Debug> Debug for GHashMap<K, V> {
         self.h.fmt(f)
     }
 }
+
+impl<K: Eq + Hash, V: PartialEq> PartialEq for GHashMap<K, V> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.h == other.h
+    }
+}
+
+impl<K: Eq + Hash, V: Eq> Eq for GHashMap<K, V> {}
 
 impl<K: Serialize, V: Serialize> Serialize for GHashMap<K, V> {
     #[inline]
