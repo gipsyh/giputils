@@ -1,4 +1,5 @@
 use ahash::{HashMap, HashSet, RandomState};
+use serde::{Deserialize, Serialize};
 use std::{
     collections::{hash_map, hash_set},
     fmt::{self, Debug},
@@ -70,6 +71,29 @@ impl<T: Debug> Debug for GHashSet<T> {
     }
 }
 
+impl<T: Serialize> Serialize for GHashSet<T> {
+    #[inline]
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.h.serialize(serializer)
+    }
+}
+
+impl<'de, T: Deserialize<'de> + Eq + Hash> Deserialize<'de> for GHashSet<T> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        HashSet::<T>::deserialize(deserializer).map(|h| {
+            let mut new_h = GHashSet::new();
+            new_h.extend(h);
+            new_h
+        })
+    }
+}
+
 #[derive(Clone)]
 pub struct GHashMap<K, V> {
     h: HashMap<K, V>,
@@ -131,5 +155,30 @@ impl<K: Debug, V: Debug> Debug for GHashMap<K, V> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.h.fmt(f)
+    }
+}
+
+impl<K: Serialize, V: Serialize> Serialize for GHashMap<K, V> {
+    #[inline]
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.h.serialize(serializer)
+    }
+}
+
+impl<'de, K: Deserialize<'de> + Eq + Hash, V: Deserialize<'de>> Deserialize<'de>
+    for GHashMap<K, V>
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        HashMap::<K, V>::deserialize(deserializer).map(|h| {
+            let mut new_h = GHashMap::new();
+            new_h.extend(h);
+            new_h
+        })
     }
 }
