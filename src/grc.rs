@@ -1,5 +1,4 @@
 use std::{
-    hash::{Hash, Hasher},
     ops::{Deref, DerefMut},
     sync::Arc,
 };
@@ -74,13 +73,6 @@ macro_rules! define_rc_wrapper {
         }
 
         impl<T> Eq for $wrapper<T> {}
-
-        impl<T> Hash for $wrapper<T> {
-            #[inline]
-            fn hash<H: Hasher>(&self, state: &mut H) {
-                $inner::as_ptr(&self.inner).hash(state);
-            }
-        }
 
         unsafe impl<T> Sync for $wrapper<T> {}
 
