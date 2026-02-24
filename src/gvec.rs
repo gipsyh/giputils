@@ -4,7 +4,7 @@ use std::{
 };
 
 use rand::{
-    Rng,
+    RngExt,
     distr::{Distribution, StandardUniform},
     rngs::StdRng,
 };

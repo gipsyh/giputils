@@ -16,6 +16,6 @@ crate-type = ["staticlib", "rlib"]
 [dependencies]
 ahash = "0.8.11"
 log = "0.4.27"
-rand = "0.9.1"
+rand = "0.10"
 serde = { version = "1.0.228", features = ["derive"] }
 tempfile = "3.14.0"
