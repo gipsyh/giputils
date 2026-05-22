@@ -93,5 +93,7 @@ impl DerefMut for OptionU32 {
 pub trait TerminateCtrl: Send + Sync {
     fn terminate(&self);
 
-    fn is_terminated(&self) -> bool;
+    fn is_terminated(&self) -> bool {
+        panic!("unsupported is_terminated");
+    }
 }
