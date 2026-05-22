@@ -90,6 +90,8 @@ impl DerefMut for OptionU32 {
     }
 }
 
-pub trait StopCtrl {
-    fn stop(&mut self);
+pub trait TerminateCtrl: Send + Sync {
+    fn terminate(&self);
+
+    fn is_terminated(&self) -> bool;
 }
