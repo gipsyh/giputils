@@ -60,6 +60,7 @@ impl BitVec {
     }
 
     pub fn to_usize(&self) -> usize {
+        assert!(self.len() as u32 <= usize::BITS);
         if self.is_empty() {
             return 0;
         }
