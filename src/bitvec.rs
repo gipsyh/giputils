@@ -243,6 +243,11 @@ impl BitVec {
     pub fn try_bool(&self) -> Option<bool> {
         (self.len() == 1).then(|| self.get(0))
     }
+
+    #[inline]
+    pub fn sign_bit(&self) -> bool {
+        self.get(self.len() - 1)
+    }
 }
 
 impl AsRef<Self> for BitVec {
