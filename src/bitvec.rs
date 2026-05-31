@@ -4,7 +4,11 @@ use rand::rngs::StdRng;
 use std::{
     fmt::{self, Debug, Display},
     hash::Hash,
-    ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not},
+    ops::{
+        BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign,
+        Bound::{Excluded, Included, Unbounded},
+        Not, RangeBounds,
+    },
 };
 
 #[derive(Clone)]
@@ -111,6 +115,29 @@ impl BitVec {
         } else {
             self.bits[word_index] &= !mask;
         }
+    }
+
+    /// Returns the bits in `range`, using the same bounds semantics as Rust ranges.
+    #[inline]
+    pub fn slice<R: RangeBounds<usize>>(&self, range: R) -> Self {
+        let l = match range.start_bound() {
+            Included(&l) => l,
+            Excluded(&l) => l.checked_add(1).expect("range start overflows usize"),
+            Unbounded => 0,
+        };
+        let h = match range.end_bound() {
+            Included(&h) => h.checked_add(1).expect("range end overflows usize"),
+            Excluded(&h) => h,
+            Unbounded => self.len(),
+        };
+
+        debug_assert!(l <= h);
+        debug_assert!(h <= self.len());
+        let mut res = BitVec::zero(h - l);
+        for idx in l..h {
+            res.set(idx - l, self.get(idx));
+        }
+        res
     }
 
     #[inline]
@@ -836,5 +863,33 @@ mod tests {
         let bv2 = BitVec::from("10");
         assert!(bv0 == bv1);
         assert!(bv0 == bv2);
+    }
+
+    #[test]
+    fn test_slice() {
+        let bv = BitVec::from_iter((0..130).map(|i| i % 3 == 0 || i % 7 == 0));
+
+        let cases = [
+            (0, 0),
+            (0, 1),
+            (1, 5),
+            (0, 64),
+            (3, 67),
+            (64, 128),
+            (65, 130),
+        ];
+        for (l, h) in cases {
+            let slice = bv.slice(l..h);
+            assert_eq!(slice.len(), h - l);
+            for i in 0..slice.len() {
+                assert_eq!(slice.get(i), bv.get(l + i), "l={l}, h={h}, i={i}");
+            }
+        }
+
+        let slice = bv.slice(3..=67);
+        assert_eq!(slice.len(), 65);
+        for i in 0..slice.len() {
+            assert_eq!(slice.get(i), bv.get(3 + i), "inclusive range, i={i}");
+        }
     }
 }
