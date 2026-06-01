@@ -8,6 +8,7 @@ use rand::{
     distr::{Distribution, StandardUniform},
     rngs::StdRng,
 };
+use serde::{Deserialize, Serialize};
 
 #[derive(Default, Debug, Clone)]
 pub struct Gvec<T> {
@@ -179,6 +180,26 @@ impl<T> From<Vec<T>> for Gvec<T> {
     #[inline]
     fn from(data: Vec<T>) -> Self {
         Self { data }
+    }
+}
+
+impl<T: Serialize> Serialize for Gvec<T> {
+    #[inline]
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.data.serialize(serializer)
+    }
+}
+
+impl<'de, T: Deserialize<'de>> Deserialize<'de> for Gvec<T> {
+    #[inline]
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Vec::<T>::deserialize(deserializer).map(Self::from)
     }
 }
 

@@ -1,6 +1,7 @@
 use crate::gvec::Gvec;
 use core::panic;
 use rand::rngs::StdRng;
+use serde::{Deserialize, Serialize};
 use std::{
     fmt::{self, Debug, Display},
     hash::Hash,
@@ -11,7 +12,7 @@ use std::{
     },
 };
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct BitVec {
     bits: Gvec<u64>,
     last_len: usize,
