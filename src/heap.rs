@@ -1,4 +1,4 @@
-use crate::{OptionU32, grc::Grc, gvec::Gvec};
+use crate::{OptionU32, gvec::Gvec, ptr::Grc};
 
 pub trait BinaryHeapCmp<T> {
     fn gte(&self, s: T, o: T) -> bool;
@@ -137,8 +137,8 @@ impl<T: Into<u32> + Copy + PartialEq, CMP: BinaryHeapCmp<T>> BinaryHeap<T, CMP> 
 #[cfg(test)]
 mod tests {
     use crate::{
-        grc::Grc,
         heap::{BinaryHeap, BinaryHeapCmp},
+        ptr::Grc,
     };
 
     struct CMP;
