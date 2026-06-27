@@ -1,5 +1,6 @@
 use std::{
     ops::{Deref, DerefMut},
+    ptr::NonNull,
     sync::Arc,
 };
 
@@ -89,3 +90,49 @@ macro_rules! define_rc_wrapper {
 
 define_rc_wrapper!(Grc, Arc);
 define_rc_wrapper!(Garc, Arc);
+
+/// A non-owning pointer: like [`NonNull`], it merely stores an address and does
+/// not allocate or drop anything, but unlike [`NonNull`] the pointee can be
+/// accessed without `unsafe`. There is no reference counting and no
+/// [`Drop`] — the pointer borrows data owned elsewhere, and the caller is
+/// responsible for keeping that data alive for as long as the `Gptr` is used.
+///
+/// `Gptr<T>` is always non-null. It is constructed from a reference, so the
+/// borrow is established without `unsafe`; thereafter both shared and mutable
+/// access go through [`Deref`] / [`DerefMut`].
+pub struct Gptr<T> {
+    ptr: NonNull<T>,
+}
+
+impl<T> Gptr<T> {
+    /// Creates a `Gptr` borrowing `r`. The caller must ensure `r` outlives
+    /// every use of the returned `Gptr`; this is not enforced by the borrow
+    /// checker because the pointer carries no lifetime.
+    #[inline]
+    pub fn new(r: &T) -> Self {
+        Self {
+            ptr: NonNull::from(r),
+        }
+    }
+
+    #[inline]
+    pub fn as_ptr(&self) -> *const T {
+        self.ptr.as_ptr()
+    }
+}
+
+impl<T> Deref for Gptr<T> {
+    type Target = T;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        unsafe { self.ptr.as_ref() }
+    }
+}
+
+impl<T> DerefMut for Gptr<T> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { self.ptr.as_mut() }
+    }
+}
