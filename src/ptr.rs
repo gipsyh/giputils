@@ -100,6 +100,7 @@ define_rc_wrapper!(Garc, Arc);
 /// `Gptr<T>` is always non-null. It is constructed from a reference, so the
 /// borrow is established without `unsafe`; thereafter both shared and mutable
 /// access go through [`Deref`] / [`DerefMut`].
+#[derive(Clone, Copy, Debug)]
 pub struct Gptr<T> {
     ptr: NonNull<T>,
 }
@@ -136,3 +137,7 @@ impl<T> DerefMut for Gptr<T> {
         unsafe { self.ptr.as_mut() }
     }
 }
+
+unsafe impl<T> Sync for Gptr<T> {}
+
+unsafe impl<T> Send for Gptr<T> {}
