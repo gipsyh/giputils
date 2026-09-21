@@ -7,6 +7,7 @@ pub mod gvec;
 pub mod hash;
 pub mod heap;
 pub mod logger;
+pub mod mem;
 mod others;
 pub mod ptr;
 pub mod statistic;
