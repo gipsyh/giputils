@@ -6,6 +6,22 @@ use std::{
     process::Command,
 };
 
+/// Links the target's default C++ runtime unless CXXSTDLIB overrides it.
+/// An empty CXXSTDLIB leaves runtime selection to the linker driver.
+pub fn link_cxx_stdlib() {
+    println!("cargo:rerun-if-env-changed=CXXSTDLIB");
+    let lib = env::var("CXXSTDLIB").unwrap_or_else(|_| {
+        match env::var("CARGO_CFG_TARGET_OS").as_deref() {
+            Ok("linux") => "stdc++".into(),
+            Ok("macos") => "c++".into(),
+            _ => String::new(),
+        }
+    });
+    if !lib.is_empty() {
+        println!("cargo:rustc-link-lib=dylib={lib}");
+    }
+}
+
 pub fn copy_build(src: &str, f: impl FnOnce(&Path) -> io::Result<()>) -> io::Result<PathBuf> {
     let src_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join(src);
     let cp_dir = PathBuf::from(env::var("OUT_DIR").unwrap()).join(src);
